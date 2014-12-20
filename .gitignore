@@ -1,0 +1,9 @@
+.*
+!/.gitignore
+*~
+*.swp
+*.swo
+
+*.class
+
+/build/
