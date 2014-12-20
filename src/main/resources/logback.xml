@@ -1,0 +1,12 @@
+<configuration>
+  <appender name="file" class="ch.qos.logback.core.FileAppender">
+    <file>mediaman.log</file>
+    <encoder>>
+      <pattern>%d{YYYY-MM-dd HH:mm:ss} [%-5level] %logger{12}: %msg%n</pattern>
+    </encoder>
+  </appender>
+
+  <root level="debug">
+    <appender-ref ref="file"/>
+  </root>
+</configuration>

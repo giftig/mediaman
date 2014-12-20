@@ -6,7 +6,6 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.programmingcentre.utils</groupId>
   <artifactId>media-management</artifactId>
-  <packaging>pom</packaging>
   <version>1.0</version>
 
   <build>
@@ -72,7 +71,15 @@
       <artifactId>akka-actor_2.10</artifactId>
       <version>2.3.0</version>
     </dependency>
+
+    <!-- Logging -->
+    <dependency>
+      <groupId>ch.qos.logback</groupId>
+      <artifactId>logback-classic</artifactId>
+      <version>1.1.2</version>
+    </dependency>
   </dependencies>
+
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
