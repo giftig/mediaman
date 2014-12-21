@@ -15,6 +15,8 @@ import spray.routing.HttpService
 trait ServiceAPI extends HttpService {
   val logger = LoggerFactory.getLogger("mediaman").asInstanceOf[Logger]
 
+  def createEpisode = {
+  }
   def ping = path("ping") {
     get { complete {
       logger.debug("Ping was hit with a GET request")

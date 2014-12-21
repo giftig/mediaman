@@ -12,4 +12,6 @@ object Config {
   val bindPort = config.getInt("service.port")
 
   val serviceName = config.getString("service.name")
+
+  val mediaPath = config.getString("media.path")
 }
