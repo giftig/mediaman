@@ -5,6 +5,7 @@ import akka.io.IO
 import ch.qos.logback.classic.{Level => LogLevel, Logger}
 import org.slf4j.LoggerFactory
 import spray.can.Http
+import spray.http.{ContentType, HttpHeaders, HttpResponse, MediaType}
 import spray.routing.HttpService
 
 
@@ -14,15 +15,23 @@ import spray.routing.HttpService
 trait ServiceAPI extends HttpService {
   val logger = LoggerFactory.getLogger("mediaman").asInstanceOf[Logger]
 
-  def pingRoute = path("ping") { get(complete {
-    logger.info("Ping endpoint hit")
-    "pong!"
-  })}
-  def pongRoute = path("pong") {
-    get(complete("pong!?"))
+  def ping = path("ping") {
+    get { complete {
+      logger.debug("Ping was hit with a GET request")
+      "pong!"
+    }} ~
+    post { complete {
+      logger.debug("Ping was hit with a POST request")
+      <p><strong>Oi!</strong> y u post meh?</p>
+    }}
+  }
+  def pong = path("pong") {
+    get { complete {
+      (404, "Pong? Wtf is a pong?")
+    }}
   }
 
-  def rootRoute = pingRoute ~ pongRoute
+  def rootRoute = ping ~ pong
 }
 
 
