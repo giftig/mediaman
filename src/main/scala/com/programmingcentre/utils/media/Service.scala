@@ -66,12 +66,8 @@ trait ServiceAPI extends HttpService {
             fileInfo.filename.get.split('.').lastOption match {
               case Some(format: String) => {
                 try {
-                  val episode = new Episode(programme, seasonNum, episodeNum, format)
-                  if (episode.save(fileInfo.entity.data)) {
-                    (200, "OK")
-                  } else {
-                    (500, "Internal Server Error")
-                  }
+                  new Episode(programme, seasonNum, episodeNum, format).save(fileInfo.entity.data)
+                  (200, "OK")
                 } catch {
                   case e: java.io.UnsupportedEncodingException => (400, "Unsupported file type")
                   case e: FileTooLargeException => (400, "That file is too large")

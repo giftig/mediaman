@@ -1,6 +1,6 @@
 package com.programmingcentre.utils.media
 
-import spray.http.HttpEntity
+import spray.http.HttpData
 import spray.httpx.unmarshalling.{Deserialized, Deserializer}
 
 import com.programmingcentre.utils.config.Config
@@ -57,10 +57,18 @@ class Episode(programme: Programme, season: Int, episode: Int, encoding: String)
   def fullpath: String = s"${programme.fullpath}/$filename"
 
   /**
-   * Save the given Spray HttpEntity as this episode
+   * Save the given Spray HttpData as this episode
    */
-  def save(entity: HttpEntity): Boolean = {
-    // FIXME: Put file size limit in config. And uh, implement this method.
-    throw new FileTooLargeException("Size must be < 1GB")
+  def save(data: HttpData): Unit = {
+    if (data.length > Config.maxEpisodeSize) {
+      throw new FileTooLargeException("Size")
+    }
+
+    // Convert the data into a Stream of chunks and write each chunk to the episode file
+    val f = new java.io.FileOutputStream(fullpath)
+    data.toChunkStream(Config.uploadChunkSize) foreach {
+      chunk: HttpData => f.write(chunk.toByteArray)
+    }
+    f.close
   }
 }
