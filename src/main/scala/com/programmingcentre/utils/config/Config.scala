@@ -14,4 +14,5 @@ object Config {
   val serviceName = config.getString("service.name")
 
   val mediaPath = config.getString("media.path")
+  val allowedMediaEncodings = config.getStringList("media.allowed_encodings")
 }

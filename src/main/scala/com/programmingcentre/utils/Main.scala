@@ -8,13 +8,16 @@ import spray.can.Http
 import spray.routing.HttpService
 
 import com.programmingcentre.utils.config.Config
+import com.programmingcentre.utils.media.Service
 
 
 object Main {
   val logger = LoggerFactory.getLogger("mediaman-main").asInstanceOf[Logger]
 
   def main(args: Array[String]): Unit = {
-    logger.info(s"${Config.serviceName} starting...")
+    logger.info(
+      s"${Config.serviceName} starting on http://${Config.bindHost}:${Config.bindPort}..."
+    )
 
     implicit val system = actor.ActorSystem()
     val service = system.actorOf(actor.Props[Service], Config.serviceName)
