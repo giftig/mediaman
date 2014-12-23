@@ -15,9 +15,9 @@ object Main {
   val logger = LoggerFactory.getLogger("mediaman-main").asInstanceOf[Logger]
 
   def main(args: Array[String]): Unit = {
-    logger.info(
-      s"${Config.serviceName} starting on http://${Config.bindHost}:${Config.bindPort}..."
-    )
+    val environment = Config.environment getOrElse "production"
+    val bindAddress = s"http://${Config.bindHost}:${Config.bindPort}"
+    logger.info(s"${Config.serviceName} [$environment] starting; bound to $bindAddress")
 
     implicit val system = actor.ActorSystem()
     val service = system.actorOf(actor.Props[Service], Config.serviceName)

@@ -41,6 +41,9 @@
             <launcher>
               <id>development</id>
               <mainClass>com.programmingcentre.utils.Main</mainClass>
+              <jvmArgs>
+                <jvmArg>-Dmediaman.environment=development</jvmArg>
+              </jvmArgs>
             </launcher>
           </launchers>
         </configuration>
