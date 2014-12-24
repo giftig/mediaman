@@ -45,6 +45,13 @@
                 <jvmArg>-Dmediaman.environment=development</jvmArg>
               </jvmArgs>
             </launcher>
+            <launcher>
+              <id>production</id>
+              <mainClass>com.programmingcentre.utils.Main</mainClass>
+              <jvmArgs>
+                <jvmArg>-Dmediaman.environment=production</jvmArg>
+              </jvmArgs>
+            </launcher>
           </launchers>
         </configuration>
       </plugin>
@@ -80,6 +87,13 @@
       <groupId>ch.qos.logback</groupId>
       <artifactId>logback-classic</artifactId>
       <version>1.1.2</version>
+    </dependency>
+
+    <!-- Required for conditional statements in logback configuration -->
+    <dependency>
+      <groupId>org.codehaus.janino</groupId>
+      <artifactId>janino</artifactId>
+      <version>2.6.1</version>
     </dependency>
 
     <!-- Config -->
