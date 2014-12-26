@@ -4,7 +4,7 @@ import java.io.{File, FileOutputStream}
 import java.net.URLDecoder
 
 import spray.http.HttpData
-import spray.httpx.unmarshalling.{Deserialized, Deserializer}
+import spray.httpx.unmarshalling.{Deserialized, Deserializer, MalformedContent}
 
 import com.programmingcentre.utils.config.Config
 import com.programmingcentre.utils.Main.logger
@@ -30,7 +30,12 @@ object Deserialisers {
    */
   implicit object ProgrammeDeserialiser extends Deserializer[String, Programme] {
     override def apply(s: String): Deserialized[Programme] = {
-      Right(new Programme(URLDecoder.decode(s, "UTF-8")))
+      try {
+        val prog = new Programme(URLDecoder.decode(s, "UTF-8"))
+        Right(prog)
+      } catch {
+        case e: Throwable => Left(new MalformedContent(e.getMessage, Some(e)))
+      }
     }
   }
 }
@@ -41,6 +46,10 @@ object Deserialisers {
  * exists, and creating it if it doesn't.
  */
 class Programme(val name: String) extends Media {
+  if (Config.programmePattern.findAllMatchIn(name).isEmpty) {
+    logger.error(s"""The programme name "$name" does not match ${Config.programmePattern}""")
+    throw new IllegalArgumentException("That programme name contains illegal characters")
+  }
   def fullpath: String = s"${Config.mediaPath}/$name"
 
   def save: Boolean = new File(fullpath).mkdir
@@ -57,8 +66,9 @@ class Episode(
   episode: Int,
   encoding: Option[String] = None
 ) extends Media {
-  if (!programme.exists)
+  if (!programme.exists) {
     throw new NoSuchProgrammeException(s"Programme '${programme.name}' does not exist")
+  }
 
   def name: String = f"S$season%02d E$episode%02d"
   def filename: String = f"$name.${encoding.get}"
@@ -86,9 +96,11 @@ class Episode(
       throw new java.io.UnsupportedEncodingException("Can't write an episode with no encoding")
     }
     if (!Config.allowedMediaEncodings.contains(encoding.get)) {
-      throw new java.io.UnsupportedEncodingException(s"File type '$encoding.get' not allowed")
+      logger.error(s"Bad encoding in episode: '${encoding.get}'")
+      throw new java.io.UnsupportedEncodingException(s"File type '${encoding.get}' not allowed")
     }
     if (data.length > Config.maxEpisodeSize) {
+      logger.error(s"Large file upload attempt: (${data.length} bytes)")
       throw new FileTooLargeException("Episode size must be < ${Config.maxEpisodeSize} bytes")
     }
 

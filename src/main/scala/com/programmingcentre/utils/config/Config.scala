@@ -40,6 +40,7 @@ object Config {
 
   val mediaPath = config.getString("media.path")
   val allowedMediaEncodings = config.getStringList("media.allowed_encodings")
+  val programmePattern = config.getString("media.filename_patterns.programme").r
 
   // Max episode size, in bytes
   val maxEpisodeSize: Int = parseSize(config.getString("media.max_sizes.tv"))
