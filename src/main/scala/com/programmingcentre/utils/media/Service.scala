@@ -17,22 +17,6 @@ import com.programmingcentre.utils.media.Deserialisers._
 trait ServiceAPI extends HttpService {
   val logger = LoggerFactory.getLogger("mediaman").asInstanceOf[Logger]
 
-  def ping = path("ping") {
-    get { complete {
-      logger.debug("Ping was hit with a GET request")
-      "pong!"
-    }} ~
-    post { complete {
-      logger.debug("Ping was hit with a POST request")
-      <p><strong>Oi!</strong> y u post meh?</p>
-    }}
-  }
-  def pong = path("pong") {
-    get { complete {
-      (404, "Pong? Wtf is a pong?")
-    }}
-  }
-
   /**
    * Handle requests dealing with TV Programmes
    */
@@ -66,10 +50,15 @@ trait ServiceAPI extends HttpService {
             fileInfo.filename.get.split('.').lastOption match {
               case Some(format: String) => {
                 try {
-                  new Episode(programme, seasonNum, episodeNum, format).save(fileInfo.entity.data)
+                  new Episode(
+                    programme, seasonNum, episodeNum, Some(format)
+                  ).save(fileInfo.entity.data)
                   (200, "OK")
                 } catch {
-                  case e: java.io.UnsupportedEncodingException => (400, "Unsupported file type")
+                  case e: java.io.UnsupportedEncodingException => {
+                    logger.debug(e.getMessage)
+                    (400, "Unsupported file type")
+                  }
                   case e: FileTooLargeException => (400, "That file is too large")
                   case e: NoSuchProgrammeException => (404, "That programme does not exist")
                 }
@@ -80,10 +69,20 @@ trait ServiceAPI extends HttpService {
           case None => (400, "Missing file")
         }
       }}
-    }
+    } ~
+    get { parameters("programme".as[Programme], "season".as[Int], "episode".as[Int]) {
+      (programme, seasonNum, episodeNum) => {
+        val episode = new Episode(programme, seasonNum, episodeNum)
+
+        episode.existingEncodings.values.headOption match {
+          case Some(f) => getFromFile(f)
+          case None => complete((404, "Not Found"))
+        }
+      }
+    }}
   }
 
-  def mainRoute = ping ~ pong ~ handleProgramme ~ handleEpisode
+  def mainRoute = handleProgramme ~ handleEpisode
 }
 
 

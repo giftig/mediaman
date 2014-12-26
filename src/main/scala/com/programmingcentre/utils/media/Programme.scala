@@ -1,9 +1,13 @@
 package com.programmingcentre.utils.media
 
+import java.io.{File, FileOutputStream}
+import java.net.URLDecoder
+
 import spray.http.HttpData
 import spray.httpx.unmarshalling.{Deserialized, Deserializer}
 
 import com.programmingcentre.utils.config.Config
+import com.programmingcentre.utils.Main.logger
 
 
 /**
@@ -12,7 +16,7 @@ import com.programmingcentre.utils.config.Config
  */
 trait Media {
   def fullpath: String
-  def exists: Boolean = new java.io.File(fullpath).exists
+  def exists: Boolean = new File(fullpath).exists
 }
 
 
@@ -26,7 +30,7 @@ object Deserialisers {
    */
   implicit object ProgrammeDeserialiser extends Deserializer[String, Programme] {
     override def apply(s: String): Deserialized[Programme] = {
-      Right(new Programme(java.net.URLDecoder.decode(s, "UTF-8")))
+      Right(new Programme(URLDecoder.decode(s, "UTF-8")))
     }
   }
 }
@@ -39,36 +43,68 @@ object Deserialisers {
 class Programme(val name: String) extends Media {
   def fullpath: String = s"${Config.mediaPath}/$name"
 
-  def save: Boolean = new java.io.File(fullpath).mkdir
+  def save: Boolean = new File(fullpath).mkdir
 }
 
 
 /**
- * Represents an episode of a TV programme
+ * Represents an episode of a TV programme. An encoding must be provided if this Episode is going
+ * to be saved to disk, and fullpath / filename will not be available without one.
  */
-class Episode(programme: Programme, season: Int, episode: Int, encoding: String) extends Media {
-  if (!Config.allowedMediaEncodings.contains(encoding))
-    throw new java.io.UnsupportedEncodingException(s"File type '$encoding' not allowed")
-
+class Episode(
+  programme: Programme,
+  season: Int,
+  episode: Int,
+  encoding: Option[String] = None
+) extends Media {
   if (!programme.exists)
     throw new NoSuchProgrammeException(s"Programme '${programme.name}' does not exist")
 
-  def filename: String = f"S$season%02d E$episode%02d.$encoding"
+  def name: String = f"S$season%02d E$episode%02d"
+  def filename: String = f"$name.${encoding.get}"
   def fullpath: String = s"${programme.fullpath}/$filename"
+
+  /**
+   * Find paths to all copies of this episode, with any encoding
+   *
+   * @return A map of encodings to files. Empty if none exist
+   */
+  def existingEncodings: Map[String, File] = {
+    // Collect files in the programme directory which match our episode
+    val files = new File(programme.fullpath).listFiles collect {
+      case f if f.getName.startsWith(name) => f
+    }
+    val extensions = files map { _.getName.takeRight(3) }
+    (extensions zip files).toMap
+  }
 
   /**
    * Save the given Spray HttpData as this episode
    */
   def save(data: HttpData): Unit = {
+    if (encoding.isEmpty) {
+      throw new java.io.UnsupportedEncodingException("Can't write an episode with no encoding")
+    }
+    if (!Config.allowedMediaEncodings.contains(encoding.get)) {
+      throw new java.io.UnsupportedEncodingException(s"File type '$encoding.get' not allowed")
+    }
     if (data.length > Config.maxEpisodeSize) {
-      throw new FileTooLargeException("Size")
+      throw new FileTooLargeException("Episode size must be < ${Config.maxEpisodeSize} bytes")
     }
 
     // Convert the data into a Stream of chunks and write each chunk to the episode file
-    val f = new java.io.FileOutputStream(fullpath)
+    val f = new FileOutputStream(fullpath)
     data.toChunkStream(Config.uploadChunkSize) foreach {
       chunk: HttpData => f.write(chunk.toByteArray)
     }
     f.close
+
+    // Make sure duplicate files are gone
+    existingEncodings filterKeys { _ != encoding.get } foreach {
+      item => {
+        logger.info(s"Deleting duplicate encoding ${item._1} for episode $name")
+        item._2.delete
+      }
+    }
   }
 }
