@@ -9,7 +9,7 @@
       </else>
     </if>
     <withJansi>true</withJansi>
-    <encoder>>
+    <encoder>
       <pattern>%d{YYYY-MM-dd HH:mm:ss} [%highlight(%.-3level)] %logger{12}: %msg%n</pattern>
     </encoder>
   </appender>
