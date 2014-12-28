@@ -47,7 +47,7 @@ trait ServiceAPI extends HttpService {
         body match {
           case Some(fileInfo: BodyPart) => {
             // Check the file extension
-            fileInfo.filename.get.split('.').lastOption match {
+            fileInfo.filename.getOrElse("").split('.').lastOption match {
               case Some(format: String) => {
                 try {
                   new Episode(
