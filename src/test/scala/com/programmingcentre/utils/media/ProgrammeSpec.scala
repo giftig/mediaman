@@ -15,7 +15,13 @@ trait MediaMocker extends Media {
 
 class ProgrammeSpec extends FlatSpec {
   "A Programme" should "be constructed with a good filename" in {
-    new Programme("Awesome TV programme")
+    Seq(
+      "Awesome TV Programme",
+      "CSI: Crime Scene Investigation",
+      "Grey's Anatomy",
+      "Marvel's Agents of S.H.I.E.L.D.",
+      "Old Show (1979)"
+    ) foreach { new Programme(_) }
   }
 
   it should "throw an IllegalArgumentException with a bad filename" in {
