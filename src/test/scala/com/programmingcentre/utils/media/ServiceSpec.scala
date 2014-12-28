@@ -112,7 +112,7 @@ class ServiceSpec extends FileWritingSpec with ScalatestRouteTest with ServiceAP
     val request = createUploadRequest(prog, 1, 1, content)
 
     request ~> mainRoute ~> check { status.intValue should be (200) }
-    Source.fromFile(s"${prog.file.getCanonicalPath}/S01 E01.txt").mkString should be (content)
+    Source.fromFile(new File(prog.file, "S01 E01.txt")).mkString should be (content)
   }
 
   it should "reject a PUT file with no extension" in {

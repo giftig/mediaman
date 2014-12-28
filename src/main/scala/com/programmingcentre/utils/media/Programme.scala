@@ -69,9 +69,16 @@ class Episode(
     throw new NoSuchProgrammeException(s"Programme '${programme.name}' does not exist")
   }
 
-  def name: String = f"S$season%02d E$episode%02d"
-  def filename: String = f"$name.${encoding.get}"
-  override def file: File = new File(s"${programme.file.getCanonicalPath}/$filename")
+  val name: String = f"S$season%02d E$episode%02d"
+  val filename: Option[String] = if (encoding.isDefined) Some(f"$name.${encoding.get}") else None
+
+  override def file: File = {
+    if (filename.isDefined) {
+      new File(programme.file, filename.get)
+    } else {
+      throw new RuntimeException("Can't operate on a file with no encoding")
+    }
+  }
 
   /**
    * Find paths to all copies of this episode, with any encoding

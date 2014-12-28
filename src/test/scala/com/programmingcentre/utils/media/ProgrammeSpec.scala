@@ -115,7 +115,7 @@ class EpisodeSpec extends FileWritingSpec with Matchers {
     prog.save
 
     val files = List("S01 E01.avi", "S01 E01.exe", "S01 E01.mkv", "S01 E01.txt") map {
-      e => new File(s"${prog.file.getCanonicalPath}/$e")
+      e => new File(prog.file, e)
     }
     files foreach { _.createNewFile }
 
