@@ -54,6 +54,31 @@ class ServiceSpec extends FileWritingSpec with ScalatestRouteTest with ServiceAP
     } foreach { _.delete }
   }
 
+  /**
+   * Create a temporary file with the given content and return an HttpRequest to upload it as an
+   * Episode of the given Programme.
+   */
+  private def createUploadRequest(
+    programme: Programme,
+    season: Int,
+    episode: Int,
+    content: String,
+    format: String = ".txt"
+  ): HttpRequest = {
+    val file = ServiceSpec.createUploadFile(content, format)
+    Put(
+      "/episode",
+      new MultipartFormData(
+        ServiceSpec.formDataToBodyParts(Seq(
+          ("programme", programme.name),
+          ("season", season.toString),
+          ("episode", episode.toString)
+        )) :+
+        BodyPart(file, "file")
+      )
+    )
+  }
+
   "The programme handler" should "create a new TV programme and conflict if already existing" in {
     val request = Post("/programme", new FormData(Seq(("name", "Jeeves I: Serving Hodor"))))
     request ~> mainRoute ~> check { status.intValue should be (200) }
@@ -82,22 +107,21 @@ class ServiceSpec extends FileWritingSpec with ScalatestRouteTest with ServiceAP
     val prog = new Programme("Jeeves III: Revenge of the Waistcoat")
     prog.save
 
-    val content = "Jeeves, fetch me my hunting shorts!"
-    val fileUpload = ServiceSpec.createUploadFile(content)
-
     // Now try to PUT our episode file into the programme
-    val request = Put(
-      "/episode",
-      new MultipartFormData(
-        ServiceSpec.formDataToBodyParts(Seq(
-          ("programme", prog.name),
-          ("season", "1"),
-          ("episode", "1")
-        )) :+
-        BodyPart(fileUpload, "file")
-      )
-    )
+    val content = "Jeeves, fetch me my hunting shorts!"
+    val request = createUploadRequest(prog, 1, 1, content)
+
     request ~> mainRoute ~> check { status.intValue should be (200) }
     Source.fromFile(s"${prog.fullpath}/S01 E01.txt").mkString should be (content)
+  }
+
+  it should "reject a PUT file with no extension" in {
+    val prog = new Programme("Jenkins I: The Prodige")
+    prog.save
+
+    val request = createUploadRequest(prog, 1, 1, "Jenkins, it's all up to you now.", "")
+
+    request ~> mainRoute ~> check { status.intValue should be (400) }
+    new File(s"${prog.fullpath}").listFiles.isEmpty should be (true)
   }
 }
