@@ -15,8 +15,8 @@ import com.programmingcentre.utils.Main.logger
  * way of checking whether or not they already exist.
  */
 trait Media {
-  def fullpath: String
-  def exists: Boolean = new File(fullpath).exists
+  def file: File
+  def exists: Boolean = file.exists
 }
 
 
@@ -50,15 +50,14 @@ class Programme(val name: String) extends Media {
     logger.error(s"""The programme name "$name" does not match ${Config.programmePattern}""")
     throw new IllegalArgumentException("That programme name contains illegal characters")
   }
-  def fullpath: String = s"${Config.mediaPath}/$name"
-
-  def save: Boolean = new File(fullpath).mkdir
+  override def file: File = new File(s"${Config.mediaPath}/$name")
+  def save: Boolean = file.mkdir
 }
 
 
 /**
  * Represents an episode of a TV programme. An encoding must be provided if this Episode is going
- * to be saved to disk, and fullpath / filename will not be available without one.
+ * to be saved to disk, and file / filename will not be available without one.
  */
 class Episode(
   programme: Programme,
@@ -72,7 +71,7 @@ class Episode(
 
   def name: String = f"S$season%02d E$episode%02d"
   def filename: String = f"$name.${encoding.get}"
-  def fullpath: String = s"${programme.fullpath}/$filename"
+  override def file: File = new File(s"${programme.file.getCanonicalPath}/$filename")
 
   /**
    * Find paths to all copies of this episode, with any encoding
@@ -81,7 +80,7 @@ class Episode(
    */
   def existingEncodings: Map[String, File] = {
     // Collect files in the programme directory which match our episode
-    val files = new File(programme.fullpath).listFiles collect {
+    val files = programme.file.listFiles collect {
       case f if f.getName.startsWith(name) => f
     }
     val extensions = files map { _.getName.takeRight(3) }
@@ -105,7 +104,7 @@ class Episode(
     }
 
     // Convert the data into a Stream of chunks and write each chunk to the episode file
-    val f = new FileOutputStream(fullpath)
+    val f = new FileOutputStream(file)
     data.toChunkStream(Config.uploadChunkSize) foreach {
       chunk: HttpData => f.write(chunk.toByteArray)
     }

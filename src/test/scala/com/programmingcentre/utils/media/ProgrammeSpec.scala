@@ -58,12 +58,11 @@ class EpisodeSpec extends FileWritingSpec with Matchers {
     prog.save
 
     val ep = new Episode(prog, 1, 1, Some("avi"))
-    val file = new File(ep.fullpath)
 
-    assume(!file.exists)
+    assume(!ep.exists)
     ep.save(HttpData(data))
 
-    file.exists should be (true)
+    ep.exists should be (true)
   }
 
   it should "not save without an encoding" in {
@@ -104,20 +103,19 @@ class EpisodeSpec extends FileWritingSpec with Matchers {
     val mkv = new Episode(prog, 1, 1, Some("mkv"))
 
     avi.save(HttpData("Hodor hodor"))
-    new File(avi.fullpath).exists should be (true)
+    avi.exists should be (true)
 
     mkv.save(HttpData("Hodor hodor hodor"))
-    new File(avi.fullpath).exists should be (false)
-    new File(mkv.fullpath).exists should be (true)
+    avi.exists should be (false)
+    mkv.exists should be (true)
   }
 
   it should "retrieve alternate encodings properly" in {
     val prog = new Programme("Bran's Final Climb")
     prog.save
 
-    val dir = new File(prog.fullpath)
     val files = List("S01 E01.avi", "S01 E01.exe", "S01 E01.mkv", "S01 E01.txt") map {
-      e => new File(s"${prog.fullpath}/$e")
+      e => new File(s"${prog.file.getCanonicalPath}/$e")
     }
     files foreach { _.createNewFile }
 
