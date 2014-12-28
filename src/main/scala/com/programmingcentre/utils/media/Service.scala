@@ -55,10 +55,7 @@ trait ServiceAPI extends HttpService {
                   ).save(fileInfo.entity.data)
                   (200, "OK")
                 } catch {
-                  case e: java.io.UnsupportedEncodingException => {
-                    logger.debug(e.getMessage)
-                    (400, "Unsupported file type")
-                  }
+                  case e: java.io.UnsupportedEncodingException => (400, "Unsupported file type")
                   case e: FileTooLargeException => (400, "That file is too large")
                   case e: NoSuchProgrammeException => (404, "That programme does not exist")
                 }
