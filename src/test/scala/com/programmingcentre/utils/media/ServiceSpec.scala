@@ -12,10 +12,6 @@ import com.programmingcentre.utils.config.Config
 object ServiceSpec {
   final val TEMP_UPLOAD_FILE_PREFIX = "mediaman-test-episode-upload"
   final val TEMP_DIR = "/tmp"
-}
-
-class ServiceSpec extends FileWritingSpec with ScalatestRouteTest with ServiceAPI with Matchers {
-  def actorRefFactory = system  // Connect the service API to the test ActorSystem
 
   private def formDataToBodyParts(fields: Seq[(String, String)]): Seq[BodyPart] = {
     fields map {
@@ -35,17 +31,17 @@ class ServiceSpec extends FileWritingSpec with ScalatestRouteTest with ServiceAP
     assume(tempDir.exists)
 
     // Unfortunately the API means I have to provide an actual file and upload it
-    val fileUpload = File.createTempFile(
-      ServiceSpec.TEMP_UPLOAD_FILE_PREFIX,
-      extension,
-      tempDir
-    )
+    val fileUpload = File.createTempFile(TEMP_UPLOAD_FILE_PREFIX, extension, tempDir)
     val fileOut = new java.io.PrintWriter(fileUpload)
     fileOut.print(content)
     fileOut.close
 
     fileUpload
   }
+}
+
+class ServiceSpec extends FileWritingSpec with ScalatestRouteTest with ServiceAPI with Matchers {
+  def actorRefFactory = system  // Connect the service API to the test ActorSystem
 
   /**
    * Ensure temporary files created by createUploadFile are deleted when the test suite finishes
@@ -87,13 +83,13 @@ class ServiceSpec extends FileWritingSpec with ScalatestRouteTest with ServiceAP
     prog.save
 
     val content = "Jeeves, fetch me my hunting shorts!"
-    val fileUpload = createUploadFile(content)
+    val fileUpload = ServiceSpec.createUploadFile(content)
 
     // Now try to PUT our episode file into the programme
     val request = Put(
       "/episode",
       new MultipartFormData(
-        formDataToBodyParts(Seq(
+        ServiceSpec.formDataToBodyParts(Seq(
           ("programme", prog.name),
           ("season", "1"),
           ("episode", "1")
