@@ -32,23 +32,7 @@ class ProgrammeSpec extends FlatSpec {
 }
 
 
-class EpisodeSpec extends FlatSpec with BeforeAndAfterAll with Matchers {
-  /**
-   * Ensure the media path exists before running tests
-   */
-  override protected def beforeAll(): Unit = {
-    new File(Config.mediaPath).mkdir
-  }
-  /**
-   * Delete all programmes and episodes after tests have run, to clean up for the next run
-   */
-  override protected def afterAll(): Unit = {
-    val programmes = new File(Config.mediaPath).listFiles
-    val episodes = programmes flatMap { p: File => p.listFiles }
-
-    episodes foreach { _.delete }
-    programmes foreach { _.delete }
-  }
+class EpisodeSpec extends FileWritingSpec with Matchers {
 
   "An Episode" should "be constructed with an existing Programme" in {
     val prog = new Programme("Hodor: Revenge of the Starks") with MediaMocker
