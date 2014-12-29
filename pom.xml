@@ -5,7 +5,7 @@
 >
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.programmingcentre.utils</groupId>
-  <artifactId>media-management</artifactId>
+  <artifactId>mediaman</artifactId>
   <version>1.0</version>
 
   <build>
