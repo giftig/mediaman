@@ -13,22 +13,17 @@ fi
 
 cp "$CONFIG_FILE" src/main/resources/application.conf
 
-mvn test
-
-if [[ "$?" != 0 ]];
-  echo 'Tests failed; aborting build.'
-  exit 2
-fi
-
 mvn clean package
 
-if [[ "$?" != 0 ]];
+if [[ "$?" != 0 ]]; then
   echo 'Package step failed!'
   exit 3
 fi
 
+echo -e "\n\n\n"
 echo 'Looks like everything went fine.'
-echo "The following files were built:"
+echo "The following assemblies were generated:"
+echo -e '\n'
 
 ls build/mediaman*.jar
 
