@@ -8,3 +8,6 @@
 
 /build/
 /mediaman.log
+
+/production.conf
+/src/main/resources/production.conf
