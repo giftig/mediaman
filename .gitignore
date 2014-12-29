@@ -9,5 +9,7 @@
 /build/
 /mediaman.log
 
+/application.conf
 /production.conf
+/src/main/resources/application.conf
 /src/main/resources/production.conf

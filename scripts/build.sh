@@ -33,4 +33,4 @@ echo "The following files were built:"
 ls build/mediaman*.jar
 
 # Don't need this anymore
-rm src/main/resources/production.conf
+rm src/main/resources/application.conf
