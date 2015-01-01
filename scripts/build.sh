@@ -25,7 +25,7 @@ echo 'Looks like everything went fine.'
 echo "The following assemblies were generated:"
 echo -e '\n'
 
-ls build/mediaman*.jar
+ls build/*.jar
 
 # Don't need this anymore
 rm src/main/resources/application.conf

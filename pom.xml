@@ -56,32 +56,45 @@
         </configuration>
       </plugin>
 
+      <!-- Maven Shade: creating fat jars with more control than maven-assembly-plugin -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-assembly-plugin</artifactId>
-        <version>2.2-beta-5</version>
-
-        <configuration>
-          <archive>
-            <manifest>
-              <mainClass>com.programmingcentre.utils.Main</mainClass>
-            </manifest>
-          </archive>
-          <descriptorRefs>
-            <descriptorRef>jar-with-dependencies</descriptorRef>
-          </descriptorRefs>
-        </configuration>
-
+        <artifactId>maven-shade-plugin</artifactId>
+        <version>2.3</version>
         <executions>
           <execution>
-            <id>package-production</id>
             <phase>package</phase>
             <goals>
-              <goal>single</goal>
+              <goal>shade</goal>
             </goals>
+            <configuration>
+              <transformers>
+                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                  <mainClass>com.programmingcentre.utils.Main</mainClass>
+                </transformer>
+                <!-- Concatenate reference.conf files together rather than replacing them -->
+                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                  <resource>reference.conf</resource>
+                </transformer>
+              </transformers>
+              <filters>
+                <!-- Filter signatures belonging to dependent jars, as we're repackaging things -->
+                <filter>
+                  <artifact>*.*</artifact>
+                  <excludes>
+                    <exclude>META-INF/*.SF</exclude>
+                    <exclude>META-INF/*.DSA</exclude>
+                    <exclude>META-INF/*.RSA</exclude>
+                  </excludes>
+                </filter>
+              </filters>
+              <minimiseJar>true</minimiseJar>
+              <createDependencyReducedPom>false</createDependencyReducedPom>
+            </configuration>
           </execution>
         </executions>
       </plugin>
+
 
       <!-- Test plugin configuration: disable surefire and use scalatest -->
       <plugin>
