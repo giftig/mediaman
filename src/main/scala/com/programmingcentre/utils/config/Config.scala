@@ -1,6 +1,6 @@
 package com.programmingcentre.utils.config
 
-import com.typesafe.config.ConfigFactory
+import com.typesafe.config.{ConfigFactory, ConfigObject}
 
 /**
  * Loads in configuration settings from resources (application.conf) using typesafe ConfigFactory
@@ -44,4 +44,9 @@ object Config {
 
   // Max episode size, in bytes
   val maxEpisodeSize: Int = parseSize(config.getString("media.max_sizes.tv"))
+
+  // A mapping of usernames to plaintext passwords, for Spray's BasicAuth.
+  // Pretty crap in terms of both security and scaling, but this can be amended if it's ever
+  // used in an environment where such things matter
+  val authorisedUsers: ConfigObject = config.getObject("auth.users")
 }

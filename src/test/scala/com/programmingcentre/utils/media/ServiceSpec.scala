@@ -54,6 +54,21 @@ class ServiceSpec extends FileWritingSpec with ScalatestRouteTest with ServiceAP
     } foreach { _.delete }
   }
 
+  private val authDetails = Config.authorisedUsers.entrySet.iterator.next
+  private val validAuth = BasicHttpCredentials(
+    authDetails.getKey, authDetails.getValue.unwrapped.asInstanceOf[String]
+  )
+  private val invalidAuth = BasicHttpCredentials("jonsnow", "youknownothing")
+
+  /**
+   * Add BasicHttpCredentials to the given request; use valid = false to test invalid credentials.
+   * This is curried so that it returns a function (HttpRequest) => HttpRequest, which
+   * means the standard ~> operator can be applied to it.
+   */
+  private def authorise(valid: Boolean = true)(request: HttpRequest): HttpRequest = {
+    request ~> addCredentials(if (valid) validAuth else invalidAuth)
+  }
+
   /**
    * Create a temporary file with the given content and return an HttpRequest to upload it as an
    * Episode of the given Programme.
@@ -76,11 +91,45 @@ class ServiceSpec extends FileWritingSpec with ScalatestRouteTest with ServiceAP
         )) :+
         BodyPart(file, "file")
       )
+    ) ~> authorise()
+  }
+
+  "The service" should "decline an unauthorised request" in {
+    // Set up an episode to grab
+    val content = "Sneaky, sneaky, hack the server"
+    val prog = new Programme("Locks: A Hairy Adventure")
+    prog.save
+
+    val ep = new Episode(prog, 1, 1, Some("txt"))
+    ep.save(HttpData(content))
+
+    // Now try to grab it
+    val request = Get(
+      "/episode?programme=Locks:+A+Hairy+Adventure&season=1&episode=1"
     )
+    request ~> sealRoute(mainRoute) ~> check { status.intValue should be (401) }
+  }
+
+  it should "decline a request with bad authorisation" in {
+    // Set up an episode to grab
+    val content = "Ninjas know no fear"
+    val prog = new Programme("Lochs II: The Monster")
+    prog.save
+
+    val ep = new Episode(prog, 1, 1, Some("txt"))
+    ep.save(HttpData(content))
+
+    // Now try to grab it
+    val request = Get(
+      "/episode?programme=Lochs+II:+The+Monster&season=1&episode=1"
+    ) ~> authorise(valid = false)
+    request ~> sealRoute(mainRoute) ~> check { status.intValue should be (401) }
   }
 
   "The programme handler" should "create a new TV programme and conflict if already existing" in {
-    val request = Post("/programme", new FormData(Seq(("name", "Jeeves I: Serving Hodor"))))
+    val request = Post("/programme", new FormData(
+      Seq(("name", "Jeeves I: Serving Hodor")))
+    ) ~> authorise()
     request ~> mainRoute ~> check { status.intValue should be (200) }
     request ~> mainRoute ~> check { status.intValue should be (409) }
   }
@@ -95,7 +144,9 @@ class ServiceSpec extends FileWritingSpec with ScalatestRouteTest with ServiceAP
     ep.save(HttpData(content))
 
     // Now try to grab it
-    val request = Get("/episode?programme=Jeeves+II:+the+Aftermath&season=1&episode=1")
+    val request = Get(
+      "/episode?programme=Jeeves+II:+the+Aftermath&season=1&episode=1"
+    ) ~> authorise()
     request ~> mainRoute ~> check {
       status.intValue should be (200)
       responseAs[String] should be (content)
@@ -109,7 +160,7 @@ class ServiceSpec extends FileWritingSpec with ScalatestRouteTest with ServiceAP
 
     // Now try to PUT our episode file into the programme
     val content = "Jeeves, fetch me my hunting shorts!"
-    val request = createUploadRequest(prog, 1, 1, content)
+    val request = createUploadRequest(prog, 1, 1, content) ~> authorise()
 
     request ~> mainRoute ~> check { status.intValue should be (200) }
     Source.fromFile(new File(prog.file, "S01 E01.txt")).mkString should be (content)
@@ -119,7 +170,9 @@ class ServiceSpec extends FileWritingSpec with ScalatestRouteTest with ServiceAP
     val prog = new Programme("Jenkins I: The Prodige")
     prog.save
 
-    val request = createUploadRequest(prog, 1, 1, "Jenkins, it's all up to you now.", "")
+    val request = createUploadRequest(
+      prog, 1, 1, "Jenkins, it's all up to you now.", ""
+    ) ~> authorise()
 
     request ~> mainRoute ~> check { status.intValue should be (400) }
     prog.file.listFiles.isEmpty should be (true)
