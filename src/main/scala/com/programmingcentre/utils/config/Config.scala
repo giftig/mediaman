@@ -34,6 +34,8 @@ object Config {
 
   val bindHost = config.getString("service.host")
   val bindPort = config.getInt("service.port")
+  val adminBindHost = config.getString("admin.host")
+  val adminBindPort = config.getInt("admin.port")
 
   val serviceName = config.getString("service.name")
   val uploadChunkSize: Int = parseSize(config.getString("service.upload_chunk_size"))
