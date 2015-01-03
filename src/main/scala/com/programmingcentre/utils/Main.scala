@@ -24,10 +24,16 @@ object Main {
     val bindAddress = s"http://${Config.bindHost}:${Config.bindPort}"
     logger.info(s"${Config.serviceName} [$environment] starting; bound to $bindAddress")
 
+    // Register the HTTP interfaces for the main service and admin API
     AkkaIO(Http) ! Http.Bind(service, interface = Config.bindHost, port = Config.bindPort)
     AkkaIO(Http) ! Http.Bind(
       adminService, interface = Config.adminBindHost, port = Config.adminBindPort
     )
+
+    // Register a Reaper actor to end the actor system / application when the other actors die
+    val reaper = system.actorOf(actor.Props[DeadlyReaper])
+    reaper ! Reaper.Watch(service)
+    reaper ! Reaper.Watch(adminService)
   }
 
   /**
