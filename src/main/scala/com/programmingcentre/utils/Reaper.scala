@@ -1,11 +1,12 @@
 package com.programmingcentre.utils
 
-import akka.actor.{Actor, ActorRef, Terminated}
+import akka.actor.{Actor, ActorRef, PoisonPill, PossiblyHarmful, Terminated}
 import scala.collection.mutable.ArrayBuffer
 
 object Reaper {
   // A message used to tell the Reaper to watch something
   case class Watch(actorRef: ActorRef)
+  object KillAll extends PossiblyHarmful
 }
 
 /**
@@ -26,6 +27,9 @@ abstract class Reaper extends Actor {
       context.watch(actorRef)
       targets += actorRef
     }
+
+    // Kill all targets by sending them PoisonPills
+    case Reaper.KillAll => targets foreach { _ ! PoisonPill }
 
     // Received to tell us an actor we were watching died
     case Terminated(actorRef) => {

@@ -5,7 +5,7 @@ import spray.httpx.SprayJsonSupport
 import spray.json._
 import spray.routing.HttpService
 
-import com.programmingcentre.utils.Main
+import com.programmingcentre.utils.{Main, Reaper}
 import com.programmingcentre.utils.admin.JSONProtocol._
 import com.programmingcentre.utils.config.Config
 
@@ -36,7 +36,7 @@ trait AdminAPI extends HttpService with SprayJsonSupport {
 
   def stopService = path("stop") { post {
     complete {
-      Main.shutdown
+      Main.reaper ! Reaper.KillAll
       (202, "Accepted")
     }
   }}
