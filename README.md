@@ -42,6 +42,40 @@ service.
 I plan to also collect some stats about the service's usage and report them at
 the /stats endpoint; that's a work in progress.
 
+## Running the project
+
+Configure development.conf as desired; especially make sure that `media.path`
+exists and is accessible. Then just run the project with `mvn scala:run`.
+
+You can test the endpoints using curl, for example:
+
+```bash
+curl http://localhost:8200/status
+
+curl \
+  -X POST \
+  -u 'arya:stickthemwiththepointyend' \
+  -d 'name=Test+Programme' \
+  http://localhost:8100/programme
+
+curl \
+  -u 'arya:stickthemwiththepointyend' \
+  -X PUT \
+  -F 'programme=Test Programme' \
+  -F 'season=1' \
+  -F 'episode=3' \
+  -F 'file=@testfile.mp4' \
+  http://localhost:8100/episode
+
+curl -X POST http://localhost:8200/stop
+```
+
+You can build a fat JAR for production use with the command
+
+```bash
+  scripts/build.sh -c [production config] -l [optional production logback.xml]
+```
+
 ## Issues
 
 I'm currently considering these issues:
