@@ -34,7 +34,7 @@ trait AdminAPI extends HttpService with SprayJsonSupport {
     }
   }}
 
-  def stopService = path("stop") { get {
+  def stopService = path("stop") { post {
     complete {
       Main.shutdown
       (202, "Accepted")
