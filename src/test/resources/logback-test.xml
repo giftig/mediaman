@@ -1,2 +1,17 @@
 <configuration>
+  <if condition='property("mediaman.environment").equals("development")'>
+    <then>
+      <appender name="file" class="ch.qos.logback.core.FileAppender">
+        <file>mediaman.log</file>
+        <withJansi>true</withJansi>
+        <encoder>
+          <pattern>%d{YYYY-MM-dd HH:mm:ss} [%highlight(%.-3level)] %logger{12}: %msg%n</pattern>
+        </encoder>
+      </appender>
+
+      <root level="debug">
+        <appender-ref ref="file"/>
+      </root>
+    </then>
+  </if>
 </configuration>
