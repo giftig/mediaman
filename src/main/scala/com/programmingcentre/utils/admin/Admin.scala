@@ -1,12 +1,15 @@
 package com.programmingcentre.utils.admin
 
 import akka.actor.{Actor, ActorContext, PoisonPill}
+import spray.httpx.SprayJsonSupport
+import spray.json._
 import spray.routing.HttpService
 
 import com.programmingcentre.utils.Main
+import com.programmingcentre.utils.admin.JSONProtocol._
 import com.programmingcentre.utils.config.Config
 
-trait AdminAPI extends HttpService {
+trait AdminAPI extends HttpService with SprayJsonSupport {
   val context: ActorContext
 
   /**
@@ -20,10 +23,14 @@ trait AdminAPI extends HttpService {
     // FIXME: Needless to say, I should turn this response data into a case class and use
     //        either liftjson or spray-json to serialise it
     complete {
-      (
-        200,
-        s"""{"host": "${Config.adminBindHost}", "port": ${Config.adminBindPort}}"""
+      val status = ServiceStatus(
+        service_name = Config.serviceName,
+        service_port = Config.bindPort,
+        admin_port = Config.adminBindPort,
+        uptime = context.system.uptime,
+        pid = 0
       )
+      status.toJson.asInstanceOf[JsObject]
     }
   }}
 
