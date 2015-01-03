@@ -1,8 +1,11 @@
 package com.programmingcentre.utils
 
+import scala.util.control.NonFatal
+
 import akka.actor
 import akka.io.{IO => AkkaIO}
 import ch.qos.logback.classic.{Level => LogLevel, Logger}
+import java.lang.management.ManagementFactory
 import org.slf4j.LoggerFactory
 import spray.can.Http
 import spray.routing.HttpService
@@ -36,4 +39,17 @@ object Main {
     reaper ! Reaper.Watch(service)
     reaper ! Reaper.Watch(adminService)
   }
+
+  /**
+   * Attempt to get the PID of the current process. The JVM doesn't provide a very reliable means
+   * of achieving this, so catch any exceptions which happen while trying this and use a None.
+   */
+   val pid: Option[Int] = try {
+     Some(ManagementFactory.getRuntimeMXBean.getName.split("@")(0).toInt)
+   } catch {
+     case NonFatal(t) => {
+       logger.error(s"Exception $t occurred while calculating pid!")
+       None
+     }
+   }
 }

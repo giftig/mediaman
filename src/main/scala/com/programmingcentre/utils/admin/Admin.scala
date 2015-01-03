@@ -23,14 +23,13 @@ trait AdminAPI extends HttpService with SprayJsonSupport {
     // FIXME: Needless to say, I should turn this response data into a case class and use
     //        either liftjson or spray-json to serialise it
     complete {
-      val status = ServiceStatus(
+      ServiceStatus(
         service_name = Config.serviceName,
         service_port = Config.bindPort,
         admin_port = Config.adminBindPort,
         uptime = context.system.uptime,
-        pid = 0
-      )
-      status.toJson.asInstanceOf[JsObject]
+        pid = Main.pid
+      ).toJson.asInstanceOf[JsObject]
     }
   }}
 

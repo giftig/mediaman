@@ -6,5 +6,5 @@ case class ServiceStatus(
   service_port: Int,
   admin_port: Int,
   uptime: Long,
-  pid: Int
+  pid: Option[Int]
 )
