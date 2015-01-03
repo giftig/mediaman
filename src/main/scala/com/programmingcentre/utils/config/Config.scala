@@ -47,8 +47,9 @@ object Config {
   // Max episode size, in bytes
   val maxEpisodeSize: Int = parseSize(config.getString("media.max_sizes.tv"))
 
-  // A mapping of usernames to plaintext passwords, for Spray's BasicAuth.
+  // Mappings of usernames to plaintext passwords, for Spray's BasicAuth.
   // Pretty crap in terms of both security and scaling, but this can be amended if it's ever
   // used in an environment where such things matter
-  val authorisedUsers: ConfigObject = config.getObject("auth.users")
+  val authorisedUploaders: ConfigObject = config.getObject("auth.users.upload")
+  val authorisedDownloaders: ConfigObject = config.getObject("auth.users.download")
 }

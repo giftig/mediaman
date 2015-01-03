@@ -7,8 +7,6 @@ import scala.io.Source
 import spray.http._
 import spray.testkit.ScalatestRouteTest
 
-import com.programmingcentre.utils.config.Config
-
 object ServiceSpec {
   final val TEMP_UPLOAD_FILE_PREFIX = "mediaman-test-episode-upload"
   final val TEMP_DIR = "/tmp"
@@ -40,7 +38,11 @@ object ServiceSpec {
   }
 }
 
-class ServiceSpec extends FileWritingSpec with ScalatestRouteTest with ServiceAPI with Matchers {
+class ServiceSpec extends FileWritingSpec
+  with ScalatestRouteTest
+  with ServiceAPI
+  with Matchers
+  with BasicAuth {
   def actorRefFactory = system  // Connect the service API to the test ActorSystem
 
   /**
@@ -52,21 +54,6 @@ class ServiceSpec extends FileWritingSpec with ScalatestRouteTest with ServiceAP
     new File(ServiceSpec.TEMP_DIR).listFiles filter {
       _.getName.startsWith(ServiceSpec.TEMP_UPLOAD_FILE_PREFIX)
     } foreach { _.delete }
-  }
-
-  private val authDetails = Config.authorisedUsers.entrySet.iterator.next
-  private val validAuth = BasicHttpCredentials(
-    authDetails.getKey, authDetails.getValue.unwrapped.asInstanceOf[String]
-  )
-  private val invalidAuth = BasicHttpCredentials("jonsnow", "youknownothing")
-
-  /**
-   * Add BasicHttpCredentials to the given request; use valid = false to test invalid credentials.
-   * This is curried so that it returns a function (HttpRequest) => HttpRequest, which
-   * means the standard ~> operator can be applied to it.
-   */
-  private def authorise(valid: Boolean = true)(request: HttpRequest): HttpRequest = {
-    request ~> addCredentials(if (valid) validAuth else invalidAuth)
   }
 
   /**
@@ -122,8 +109,21 @@ class ServiceSpec extends FileWritingSpec with ScalatestRouteTest with ServiceAP
     // Now try to grab it
     val request = Get(
       "/episode?programme=Lochs+II:+The+Monster&season=1&episode=1"
-    ) ~> authorise(valid = false)
+    ) ~> authorise("INVALID")
     request ~> sealRoute(mainRoute) ~> check { status.intValue should be (401) }
+  }
+
+  it should "decline an upload request with download-only auth" in {
+    // Set up a programme to which to put a file
+    val prog = new Programme("Lox: A Fishy Pun")
+    prog.save
+
+    // Now try to PUT our episode file into the programme
+    val content = "Mmm, salmon"
+    val request = createUploadRequest(prog, 1, 1, content) ~> authorise("DOWNLOADER")
+
+    request ~> sealRoute(mainRoute) ~> check { status.intValue should be (401) }
+    new File(prog.file, "S01 E01.txt").exists should be (false)
   }
 
   "The programme handler" should "create a new TV programme and conflict if already existing" in {

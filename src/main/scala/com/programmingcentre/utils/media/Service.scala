@@ -20,9 +20,14 @@ import com.programmingcentre.utils.media.Deserialisers._
  */
 trait ServiceAPI extends HttpService {
   val logger = LoggerFactory.getLogger("mediaman").asInstanceOf[Logger]
-  private val auth = BasicAuth(
+  private val downloadAuth = BasicAuth(
     realm = Config.serviceName,
-    config = Config.authorisedUsers.toConfig,
+    config = Config.authorisedDownloaders.toConfig,
+    createUser = (allowedUser: UserPass) => allowedUser.user
+  )
+  private val uploadAuth = BasicAuth(
+    realm = Config.serviceName,
+    config = Config.authorisedUploaders.toConfig,
     createUser = (allowedUser: UserPass) => allowedUser.user
   )
 
@@ -31,7 +36,7 @@ trait ServiceAPI extends HttpService {
    * Handle requests dealing with TV Programmes
    */
   def handleProgramme = path("programme") {
-    post { formFields("name".as[Programme]) { prog => authenticate(auth) {
+    post { formFields("name".as[Programme]) { prog => authenticate(uploadAuth) {
       username => complete {
         // If the programme already exists, give them a 409 (update conflict)
         if (prog.exists) {
@@ -52,7 +57,7 @@ trait ServiceAPI extends HttpService {
     put {
       formFields(
         "programme".as[Programme], "season".as[Int], "episode".as[Int], "file".as[Option[BodyPart]]
-      ) { (programme, seasonNum, episodeNum, body) => authenticate(auth) {
+      ) { (programme, seasonNum, episodeNum, body) => authenticate(uploadAuth) {
         username => complete {
           body match {
             case Some(fileInfo: BodyPart) => {
@@ -79,7 +84,7 @@ trait ServiceAPI extends HttpService {
       }}
     } ~
     get { parameters("programme".as[Programme], "season".as[Int], "episode".as[Int]) {
-      (programme, seasonNum, episodeNum) => authenticate(auth) { username => {
+      (programme, seasonNum, episodeNum) => authenticate(downloadAuth) { username => {
         val episode = new Episode(programme, seasonNum, episodeNum)
 
         episode.existingEncodings.values.headOption match {
