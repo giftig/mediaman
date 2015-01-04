@@ -30,8 +30,6 @@ trait CorsSupport {
         reasons.exists(_.isInstanceOf[MethodRejection])
       ) => {
         val allowedMethods = reasons.collect { case r: MethodRejection => r.supported }
-        import com.programmingcentre.utils.Main
-        Main.logger.debug(s"OPTIONS request made: ${context.request.uri}")
 
         context.complete(HttpResponse().withHeaders(
           `Access-Control-Allow-Methods`(OPTIONS, allowedMethods :_*) ::
