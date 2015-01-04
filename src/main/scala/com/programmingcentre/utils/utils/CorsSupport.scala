@@ -17,7 +17,8 @@ trait CorsSupport {
       "Origin, X-Requested-With, Content-Type, Accept, Accept-Encoding, Accept-Language, Host, " +
       "Referer, User-Agent"
     ),
-    `Access-Control-Max-Age`(60 * 60 * 24 * 20)  // cache pre-flight response for 20 days
+    `Access-Control-Max-Age`(60 * 60 * 24 * 20),  // cache pre-flight response for 20 days
+    `Access-Control-Allow-Credentials`(true)
   )
 
   def cors[T]: Directive0 = mapRequestContext {
