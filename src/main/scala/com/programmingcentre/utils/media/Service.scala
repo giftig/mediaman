@@ -13,12 +13,13 @@ import spray.routing.authentication.{BasicAuth, UserPass}
 
 import com.programmingcentre.utils.config.Config
 import com.programmingcentre.utils.media.Deserialisers._
+import com.programmingcentre.utils.utils.CorsSupport
 
 
 /**
  * Trait to define an API for the media management service
  */
-trait ServiceAPI extends HttpService {
+trait ServiceAPI extends HttpService with CorsSupport {
   val logger = LoggerFactory.getLogger("mediaman").asInstanceOf[Logger]
   private val downloadAuth = BasicAuth(
     realm = Config.serviceName,
@@ -35,7 +36,7 @@ trait ServiceAPI extends HttpService {
   /**
    * Handle requests dealing with TV Programmes
    */
-  def handleProgramme = path("programme") {
+  def handleProgramme = path("programme") { cors {
     post { formFields("name".as[Programme]) { prog => authenticate(uploadAuth) {
       username => complete {
         // If the programme already exists, give them a 409 (update conflict)
@@ -48,12 +49,12 @@ trait ServiceAPI extends HttpService {
         }
       }
     }}}
-  }
+  }}
 
   /**
    * Handle requests dealing with Episodes of TV Programmes
    */
-  def handleEpisode = path("episode") {
+  def handleEpisode = path("episode") { cors {
     put {
       formFields(
         "programme".as[Programme], "season".as[Int], "episode".as[Int], "file".as[Option[BodyPart]]
@@ -93,7 +94,7 @@ trait ServiceAPI extends HttpService {
         }
       }}
     }}
-  }
+  }}
 
   def mainRoute = handleProgramme ~ handleEpisode
 }
