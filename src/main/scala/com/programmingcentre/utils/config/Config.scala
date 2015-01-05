@@ -1,6 +1,9 @@
 package com.programmingcentre.utils.config
 
+import scala.collection.JavaConversions._
+
 import com.typesafe.config.{ConfigFactory, ConfigObject}
+import spray.http.{AllOrigins, AllowedOrigins, HttpOrigin, SomeOrigins}
 
 /**
  * Loads in configuration settings from resources (application.conf) using typesafe ConfigFactory
@@ -52,4 +55,17 @@ object Config {
   // used in an environment where such things matter
   val authorisedUploaders: ConfigObject = config.getObject("auth.users.upload")
   val authorisedDownloaders: ConfigObject = config.getObject("auth.users.download")
+
+  val corsAllowCredentials = config.getBoolean("service.cors.allow_credentials")
+
+  // Grab origins from a string like "*" or
+  // "http://localhost:5000 | http://mydomain.com | http://192.168.3.14:1234"
+  val corsAllowOrigins: AllowedOrigins = {
+    config.getString("service.cors.allow_origin") match {
+      case "*" => AllOrigins
+      case multiple: String => SomeOrigins(multiple.split('|') map { s => HttpOrigin(s.trim) })
+    }
+  }
+
+  val corsAllowHeaders = config.getStringList("service.cors.allow_headers").toList
 }

@@ -5,20 +5,19 @@ import spray.http.HttpHeaders._
 import spray.http.HttpMethods._
 import spray.routing._
 
+import com.programmingcentre.utils.config.Config
+
 /**
  * A mixin to provide support for providing CORS headers as appropriate
  */
 trait CorsSupport {
   this: HttpService =>
 
-  private val allowOriginHeader = `Access-Control-Allow-Origin`(AllOrigins)
+  private val allowOriginHeader = `Access-Control-Allow-Origin`(Config.corsAllowOrigins)
   private val optionsCorsHeaders = List(
-    `Access-Control-Allow-Headers`(
-      "Origin, X-Requested-With, Content-Type, Accept, Accept-Encoding, Accept-Language, Host, " +
-      "Referer, User-Agent"
-    ),
+    `Access-Control-Allow-Headers`(Config.corsAllowHeaders.mkString(", ")),
     `Access-Control-Max-Age`(60 * 60 * 24 * 20),  // cache pre-flight response for 20 days
-    `Access-Control-Allow-Credentials`(true)
+    `Access-Control-Allow-Credentials`(Config.corsAllowCredentials)
   )
 
   def cors[T]: Directive0 = mapRequestContext {
