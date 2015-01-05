@@ -5,6 +5,8 @@ import spray.http._
 import spray.routing.HttpService
 import spray.testkit.ScalatestRouteTest
 
+import com.programmingcentre.utils.config.Config
+
 
 class CorsSupportSpec extends FlatSpec
   with ScalatestRouteTest
@@ -30,10 +32,11 @@ class CorsSupportSpec extends FlatSpec
   }
 
   it should "respond to OPTIONS requests properly" in {
-    Options("/test") ~> testRoute ~> check {
+    Options("/test") ~> addHeader("Origin", Config.corsAllowOrigins.head) ~> testRoute ~> check {
       status.intValue should be (200)
       header("Access-Control-Allow-Headers").isDefined should be (true)
       header("Access-Control-Max-Age").isDefined should be (true)
+      header("Access-Control-Allow-Origin").get.value should be (Config.corsAllowOrigins.head)
 
       val allowMethods = header("Access-Control-Allow-Methods").get.value.split(", ")
       Array("OPTIONS", "POST", "GET") foreach { allowMethods should contain (_) }
@@ -41,12 +44,24 @@ class CorsSupportSpec extends FlatSpec
     }
   }
 
-  it should "respond to all requests with the Access-Control-Allow-Origin header" in {
-    Get("/test") ~> testRoute ~> check {
-      header("Access-Control-Allow-Origin").isDefined should be (true)
+  it should "disallow bad origins" in {
+    Options("/test") ~> addHeader("Origin", "http://www.ihackugood.rip") ~> testRoute ~> check {
+      header("Access-Control-Allow-Origin").isDefined should be (false)
     }
-    Post("/test") ~> testRoute ~> check {
-      header("Access-Control-Allow-Origin").isDefined should be (true)
+  }
+
+  it should "omit Access-Control-Allow-Origin with no Origin header" in {
+    Options("/test") ~> testRoute ~> check {
+      header("Access-Control-Allow-Origin").isDefined should be (false)
+    }
+  }
+
+  it should "respond to all methods with the right Access-Control-Allow-Origin header" in {
+    Get("/test") ~> addHeader("Origin", Config.corsAllowOrigins.head) ~> testRoute ~> check {
+      header("Access-Control-Allow-Origin").get.value should be (Config.corsAllowOrigins.head)
+    }
+    Post("/test") ~> addHeader("Origin", Config.corsAllowOrigins.head) ~> testRoute ~> check {
+      header("Access-Control-Allow-Origin").get.value should be (Config.corsAllowOrigins.head)
     }
   }
 }

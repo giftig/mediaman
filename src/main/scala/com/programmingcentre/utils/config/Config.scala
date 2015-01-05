@@ -3,7 +3,6 @@ package com.programmingcentre.utils.config
 import scala.collection.JavaConversions._
 
 import com.typesafe.config.{ConfigFactory, ConfigObject}
-import spray.http.{AllOrigins, AllowedOrigins, HttpOrigin, SomeOrigins}
 
 /**
  * Loads in configuration settings from resources (application.conf) using typesafe ConfigFactory
@@ -60,10 +59,10 @@ object Config {
 
   // Grab origins from a string like "*" or
   // "http://localhost:5000 | http://mydomain.com | http://192.168.3.14:1234"
-  val corsAllowOrigins: AllowedOrigins = {
+  val corsAllowOrigins: Array[String] = {
     config.getString("service.cors.allow_origin") match {
-      case "*" => AllOrigins
-      case multiple: String => SomeOrigins(multiple.split('|') map { s => HttpOrigin(s.trim) })
+      case "*" => Array("*")
+      case multiple: String => multiple.split('|') map { _.trim }
     }
   }
 
