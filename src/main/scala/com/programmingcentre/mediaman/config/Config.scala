@@ -1,4 +1,4 @@
-package com.programmingcentre.utils.config
+package com.programmingcentre.mediaman.config
 
 import scala.collection.JavaConversions._
 

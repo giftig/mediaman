@@ -1,4 +1,4 @@
-package com.programmingcentre.utils
+package com.programmingcentre.mediaman
 
 import akka.actor.{Actor, ActorRef, PoisonPill, PossiblyHarmful, Terminated}
 import scala.collection.mutable.ArrayBuffer

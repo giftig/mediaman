@@ -1,11 +1,11 @@
-package com.programmingcentre.utils.utils
+package com.programmingcentre.mediaman.utils
 
 import org.scalatest._
 import spray.http._
 import spray.routing.HttpService
 import spray.testkit.ScalatestRouteTest
 
-import com.programmingcentre.utils.config.Config
+import com.programmingcentre.mediaman.config.Config
 
 
 class CorsSupportSpec extends FlatSpec

@@ -1,4 +1,4 @@
-package com.programmingcentre.utils.media
+package com.programmingcentre.mediaman.media
 
 import scala.collection.mutable.{Set => MSet}
 import scala.collection.JavaConversions.asScalaSet
@@ -7,7 +7,7 @@ import com.typesafe.config.ConfigValue
 import spray.http.{BasicHttpCredentials, HttpRequest}
 import spray.httpx.RequestBuilding
 
-import com.programmingcentre.utils.config.Config
+import com.programmingcentre.mediaman.config.Config
 
 /**
  * A mixin for Specs which require the ability to add BasicAuth credentials to requests

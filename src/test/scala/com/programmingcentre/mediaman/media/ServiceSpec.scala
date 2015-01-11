@@ -1,4 +1,4 @@
-package com.programmingcentre.utils.media
+package com.programmingcentre.mediaman.media
 
 import akka.actor
 import java.io.File

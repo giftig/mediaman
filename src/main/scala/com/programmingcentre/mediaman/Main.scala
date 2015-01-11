@@ -1,4 +1,4 @@
-package com.programmingcentre.utils
+package com.programmingcentre.mediaman
 
 import scala.util.control.NonFatal
 
@@ -10,9 +10,9 @@ import org.slf4j.LoggerFactory
 import spray.can.Http
 import spray.routing.HttpService
 
-import com.programmingcentre.utils.admin.Admin
-import com.programmingcentre.utils.config.Config
-import com.programmingcentre.utils.media.Service
+import com.programmingcentre.mediaman.admin.Admin
+import com.programmingcentre.mediaman.config.Config
+import com.programmingcentre.mediaman.media.Service
 
 
 object Main {

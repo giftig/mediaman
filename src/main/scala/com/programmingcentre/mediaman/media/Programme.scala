@@ -1,4 +1,4 @@
-package com.programmingcentre.utils.media
+package com.programmingcentre.mediaman.media
 
 import java.io.{File, FileOutputStream}
 import java.net.URLDecoder
@@ -6,8 +6,8 @@ import java.net.URLDecoder
 import spray.http.HttpData
 import spray.httpx.unmarshalling.{Deserialized, Deserializer, MalformedContent}
 
-import com.programmingcentre.utils.config.Config
-import com.programmingcentre.utils.Main.logger
+import com.programmingcentre.mediaman.config.Config
+import com.programmingcentre.mediaman.Main.logger
 
 
 /**

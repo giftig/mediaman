@@ -1,4 +1,4 @@
-package com.programmingcentre.utils.media
+package com.programmingcentre.mediaman.media
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -11,9 +11,9 @@ import spray.http.{BodyPart, ContentType, HttpHeaders, HttpResponse, MediaType}
 import spray.routing.HttpService
 import spray.routing.authentication.{BasicAuth, UserPass}
 
-import com.programmingcentre.utils.config.Config
-import com.programmingcentre.utils.media.Deserialisers._
-import com.programmingcentre.utils.utils.CorsSupport
+import com.programmingcentre.mediaman.config.Config
+import com.programmingcentre.mediaman.media.Deserialisers._
+import com.programmingcentre.mediaman.utils.CorsSupport
 
 
 /**

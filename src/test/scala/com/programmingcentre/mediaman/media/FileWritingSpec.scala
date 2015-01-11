@@ -1,9 +1,9 @@
-package com.programmingcentre.utils.media
+package com.programmingcentre.mediaman.media
 
 import java.io.File
 import org.scalatest.{BeforeAndAfterAll, FlatSpec}
 
-import com.programmingcentre.utils.config.Config
+import com.programmingcentre.mediaman.config.Config
 
 /**
  * This spec superclass should be used by any suite which needs to write directories / files using

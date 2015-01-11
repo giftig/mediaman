@@ -1,10 +1,10 @@
-package com.programmingcentre.utils.media
+package com.programmingcentre.mediaman.media
 
 import java.io.File
 import org.scalatest._
 import spray.http.HttpData
 
-import com.programmingcentre.utils.config.Config
+import com.programmingcentre.mediaman.config.Config
 
 
 trait MediaMocker extends Media {

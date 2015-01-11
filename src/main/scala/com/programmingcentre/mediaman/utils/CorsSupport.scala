@@ -1,11 +1,11 @@
-package com.programmingcentre.utils.utils
+package com.programmingcentre.mediaman.utils
 
 import spray.http.{HttpMethods, HttpOrigin, HttpResponse, SomeOrigins}
 import spray.http.HttpHeaders._
 import spray.http.HttpMethods._
 import spray.routing._
 
-import com.programmingcentre.utils.config.Config
+import com.programmingcentre.mediaman.config.Config
 
 /**
  * A mixin to provide support for providing CORS headers as appropriate

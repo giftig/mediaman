@@ -1,13 +1,13 @@
-package com.programmingcentre.utils.admin
+package com.programmingcentre.mediaman.admin
 
 import akka.actor.{Actor, ActorContext, PoisonPill}
 import spray.httpx.SprayJsonSupport
 import spray.json._
 import spray.routing.HttpService
 
-import com.programmingcentre.utils.{Main, Reaper}
-import com.programmingcentre.utils.admin.JSONProtocol._
-import com.programmingcentre.utils.config.Config
+import com.programmingcentre.mediaman.{Main, Reaper}
+import com.programmingcentre.mediaman.admin.JSONProtocol._
+import com.programmingcentre.mediaman.config.Config
 
 trait AdminAPI extends HttpService with SprayJsonSupport {
   val context: ActorContext

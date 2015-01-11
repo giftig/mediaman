@@ -1,4 +1,4 @@
-package com.programmingcentre.utils.admin
+package com.programmingcentre.mediaman.admin
 
 
 case class ServiceStatus(
