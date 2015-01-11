@@ -1,6 +1,8 @@
 package com.programmingcentre.mediaman
 
 import akka.actor.{Actor, ActorRef, PoisonPill, PossiblyHarmful, Terminated}
+import ch.qos.logback.classic.Logger
+import org.slf4j.LoggerFactory
 import scala.collection.mutable.ArrayBuffer
 
 object Reaper {
@@ -14,6 +16,7 @@ object Reaper {
  * targets have died.
  */
 abstract class Reaper extends Actor {
+  val logger = LoggerFactory.getLogger("reaper").asInstanceOf[Logger]
   val targets = ArrayBuffer.empty[ActorRef]
 
   /**
@@ -26,14 +29,19 @@ abstract class Reaper extends Actor {
     case Reaper.Watch(actorRef) => {
       context.watch(actorRef)
       targets += actorRef
+      log.info("Watching $actorRef. Watching ${targets.length} targets.")
     }
 
     // Kill all targets by sending them PoisonPills
-    case Reaper.KillAll => targets foreach { _ ! PoisonPill }
+    case Reaper.KillAll => {
+      log.info("Received kill all instruction; killing targets.")
+      targets foreach { _ ! PoisonPill }
+    }
 
     // Received to tell us an actor we were watching died
     case Terminated(actorRef) => {
       targets -= actorRef
+      log.info("Target $actorRef died! ${targets.length} targets left.")
       if (targets.isEmpty) allTargetsDead()
     }
   }
@@ -43,5 +51,8 @@ abstract class Reaper extends Actor {
  * A reaper which shuts down the actor system when its targets are eliminated
  */
 class DeadlyReaper extends Reaper {
-  def allTargetsDead() = context.system.shutdown
+  def allTargetsDead() = {
+    logger.info("Terminating service...")
+    context.system.shutdown
+  }
 }
