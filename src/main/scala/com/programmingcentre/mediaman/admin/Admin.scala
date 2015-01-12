@@ -19,9 +19,10 @@ trait AdminAPI extends HttpService with SprayJsonSupport {
     complete((200, "pong"))
   }}
 
+  /**
+   * Respond with some JSON-encoded service informaiton
+   */
   def status = path("status") { get {
-    // FIXME: Needless to say, I should turn this response data into a case class and use
-    //        either liftjson or spray-json to serialise it
     complete {
       ServiceStatus(
         service_name = Config.serviceName,
@@ -33,6 +34,9 @@ trait AdminAPI extends HttpService with SprayJsonSupport {
     }
   }}
 
+  /**
+   * Send the Reaper a KillAll message, instructing it to kill the service safely.
+   */
   def stopService = path("stop") { post {
     complete {
       Main.reaper ! Reaper.KillAll

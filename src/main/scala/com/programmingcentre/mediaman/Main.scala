@@ -16,7 +16,7 @@ import com.programmingcentre.mediaman.media.Service
 
 
 object Main {
-  val logger = LoggerFactory.getLogger("mediaman-main").asInstanceOf[Logger]
+  val logger = LoggerFactory.getLogger("main").asInstanceOf[Logger]
 
   private implicit val system = actor.ActorSystem()
   val reaper = system.actorOf(actor.Props[DeadlyReaper])
@@ -24,7 +24,7 @@ object Main {
   def main(args: Array[String]): Unit = {
     val environment = Config.environment getOrElse "production"
     val bindAddress = s"http://${Config.bindHost}:${Config.bindPort}"
-    logger.info(s"${Config.serviceName} [$environment] starting; bound to $bindAddress")
+    logger.info(s"${Config.serviceName} [$environment] starting on $bindAddress")
 
     val service = system.actorOf(actor.Props[Service], Config.serviceName)
     val adminService = system.actorOf(actor.Props[Admin], s"${Config.serviceName}-admin")

@@ -29,19 +29,19 @@ abstract class Reaper extends Actor {
     case Reaper.Watch(actorRef) => {
       context.watch(actorRef)
       targets += actorRef
-      log.info("Watching $actorRef. Watching ${targets.length} targets.")
+      logger.info(s"Watching $actorRef. Watching ${targets.length} targets.")
     }
 
     // Kill all targets by sending them PoisonPills
     case Reaper.KillAll => {
-      log.info("Received kill all instruction; killing targets.")
+      logger.info("Received kill all instruction; killing targets.")
       targets foreach { _ ! PoisonPill }
     }
 
     // Received to tell us an actor we were watching died
     case Terminated(actorRef) => {
       targets -= actorRef
-      log.info("Target $actorRef died! ${targets.length} targets left.")
+      logger.warn(s"Target $actorRef died! ${targets.length} targets left.")
       if (targets.isEmpty) allTargetsDead()
     }
   }
@@ -52,7 +52,7 @@ abstract class Reaper extends Actor {
  */
 class DeadlyReaper extends Reaper {
   def allTargetsDead() = {
-    logger.info("Terminating service...")
+    logger.warn("Terminating service...")
     context.system.shutdown
   }
 }

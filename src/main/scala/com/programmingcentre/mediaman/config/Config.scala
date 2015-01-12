@@ -33,7 +33,6 @@ object Config {
     ConfigFactory.load
   }
 
-
   val bindHost = config.getString("service.host")
   val bindPort = config.getInt("service.port")
   val adminBindHost = config.getString("admin.host")

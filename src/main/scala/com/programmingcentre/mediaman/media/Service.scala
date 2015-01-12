@@ -20,7 +20,6 @@ import com.programmingcentre.mediaman.utils.CorsSupport
  * Trait to define an API for the media management service
  */
 trait ServiceAPI extends HttpService with CorsSupport {
-  val logger = LoggerFactory.getLogger("mediaman").asInstanceOf[Logger]
   private val downloadAuth = BasicAuth(
     realm = Config.serviceName,
     config = Config.authorisedDownloaders.toConfig,
