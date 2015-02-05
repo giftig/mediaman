@@ -66,4 +66,6 @@ object Config {
   }
 
   val corsAllowHeaders = config.getStringList("service.cors.allow_headers").toList
+
+  val chunkingDir = new java.io.File(config.getString("service.file_chunking.path"))
 }

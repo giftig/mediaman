@@ -39,7 +39,6 @@ class ProgrammeSpec extends FlatSpec {
 
 
 class EpisodeSpec extends FileWritingSpec with Matchers {
-
   "An Episode" should "be constructed with an existing Programme" in {
     val prog = new Programme("Hodor: Revenge of the Starks") with MediaMocker
     prog._exists = true
