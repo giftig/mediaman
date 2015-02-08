@@ -18,9 +18,20 @@ class ChunkingSpec extends FileWritingSpec with Matchers {
   def getHandler = new ChunkedFileHandler(goodChecksum, 10000)
   def getHandler(checksum: String) = new ChunkedFileHandler(checksum, 10000)
 
-  // Convenience method to generate some data for a full file to be chunked on demand,
-  // to avoid using memory unnecessarily. Just produce a string of 10,000 1s as bytes
+  /**
+   * Convenience method to generate some data for a full file to be chunked on demand,
+   * to avoid using memory unnecessarily. Just produce a string of 10,000 1s as bytes
+   */
   def getFileData = ("1" * 10000).getBytes
+
+  /**
+   * Convenience method to save the given data into a chunking handler
+   */
+  def saveAllChunks(handler: Chunking, data: Array[Byte]): Unit = {
+    data.grouped(Config.uploadChunkSize).zipWithIndex foreach {
+      case (d: Array[Byte], i: Int) => handler.saveChunk(i, d)
+    }
+  }
 
   "A chunked file handler" should "create its chunk directory" in {
     getHandler.dir.exists should be (true)
@@ -82,11 +93,7 @@ class ChunkingSpec extends FileWritingSpec with Matchers {
     val handler = getHandler
     val fileData = getFileData
     assume(Config.uploadChunkSize < fileData.length)
-
-    // Save all chunks
-    fileData.grouped(Config.uploadChunkSize).zipWithIndex foreach {
-      case (d: Array[Byte], i: Int) => handler.saveChunk(i, d)
-    }
+    saveAllChunks(handler, fileData)
 
     val result: Option[File] = handler.collect
 
@@ -108,9 +115,7 @@ class ChunkingSpec extends FileWritingSpec with Matchers {
 
   it should "error if the file's checksum was incorrect" in {
     val handler = getHandler(badChecksum)
-    getFileData.grouped(Config.uploadChunkSize).zipWithIndex foreach {
-      case (d: Array[Byte], i: Int) => handler.saveChunk(i, d)
-    }
+    saveAllChunks(handler, getFileData)
     intercept[BadChecksumException] { handler.collect }
   }
 }

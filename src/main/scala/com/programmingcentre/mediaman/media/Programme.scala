@@ -2,12 +2,15 @@ package com.programmingcentre.mediaman.media
 
 import java.io.{File, FileOutputStream}
 import java.net.URLDecoder
+import scala.collection.mutable.{Map => MutableMap}
 
 import spray.http.HttpData
 import spray.httpx.unmarshalling.{Deserialized, Deserializer, MalformedContent}
+import spray.json._
 
-import com.programmingcentre.mediaman.config.Config
 import com.programmingcentre.mediaman.Main.logger
+import com.programmingcentre.mediaman.config.Config
+import com.programmingcentre.mediaman.utils.ChunkedFileHandler
 
 
 /**
@@ -40,6 +43,66 @@ object Deserialisers {
   }
 }
 
+object ProgrammeJSONProtocol extends DefaultJsonProtocol {
+  /**
+   * Serialise a ChunkedEpisodeRequest to/from JSON in the following format:
+   *
+   * {
+   *   "programme": {
+   *     "programme": String,
+   *     "season": Int,
+   *     "episode": Int,
+   *     "encoding": String
+   *   },
+   *   "file": {
+   *     "size": Long,
+   *     "checksum": String
+   *   }
+   * }
+   */
+  implicit object ChunkedEpisodeFormat extends RootJsonFormat[ChunkedEpisodeRequest] {
+    def read(value: JsValue) = value.asJsObject.getFields("programme", "file") match {
+      case Seq(progData: JsObject, fileData: JsObject) => {
+        val episode = progData.getFields("programme", "season", "episode", "encoding") match {
+          case Seq(
+            JsString(prog),
+            JsNumber(seasonNum),
+            JsNumber(episodeNum),
+            JsString(encoding)
+          ) => new Episode(new Programme(prog), seasonNum.toInt, episodeNum.toInt, Some(encoding))
+          case _ => throw new DeserializationException("Programme data was malformed")
+        }
+
+        val chunker = fileData.getFields("size", "checksum") match {
+          case Seq(JsNumber(size), JsString(checksum)) => {
+            if ("^[0-9a-f]{40}$".r.findFirstMatchIn(checksum.toString).isEmpty) {
+              throw new DeserializationException("Must provide a sha1 checksum")
+            }
+            new ChunkedFileHandler(checksum.toString, size.toLong)
+          }
+          case _ => throw new DeserializationException("Must provide filesize and sha1 checksum")
+        }
+
+        ChunkedEpisodeRequest(episode, chunker)
+      }
+      case _ => throw new DeserializationException("Should contain programme and file objects")
+    }
+
+    def write(request: ChunkedEpisodeRequest) = JsObject(
+      "programme" -> JsObject(
+        "programme" -> JsString(request.episode.programme.name),
+        "season" -> JsNumber(request.episode.season),
+        "episode" -> JsNumber(request.episode.episode),
+        "encoding" -> (request.episode.encoding.map { JsString(_) } getOrElse JsNull)
+      ),
+      "file" -> JsObject(
+        "size" -> JsNumber(request.chunkHandler.size),
+        "checksum" -> JsString(request.chunkHandler.checksum)
+      )
+    )
+  }
+}
+
 
 /**
  * Represents a TV programme. Provides convenience methods for checking if the programme already
@@ -60,10 +123,10 @@ class Programme(val name: String) extends Media {
  * to be saved to disk, and file / filename will not be available without one.
  */
 class Episode(
-  programme: Programme,
-  season: Int,
-  episode: Int,
-  encoding: Option[String] = None
+  val programme: Programme,
+  val season: Int,
+  val episode: Int,
+  val encoding: Option[String] = None
 ) extends Media {
   if (!programme.exists) {
     throw new NoSuchProgrammeException(s"Programme '${programme.name}' does not exist")
@@ -125,4 +188,10 @@ class Episode(
       }
     }
   }
+
 }
+
+/**
+ * Ties an Episode to a ChunkedFileHandler
+ */
+case class ChunkedEpisodeRequest(val episode: Episode, val chunkHandler: ChunkedFileHandler)
