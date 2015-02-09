@@ -83,11 +83,23 @@ I'm currently considering these issues:
   * Lack of HTTPS support: though I'm personally only running it on a private
     network, I ought to use HTTPS, especially with the use of Spray's BasicAuth,
     as otherwise passwords are sent as plaintext.
-  * Improper chunking: the uploads don't use chunking properly, instead sending
-    data as one big load and writing it to a file in chunks. The file seems to
-    be loaded into memory before the request completes though, even when the
-    request fails verification and the service never attempts to save it. See
-    [this thread](https://groups.google.com/forum/#!topic/spray-user/mtrj_zTRqz0)
   * I'm currently missing unit tests for a couple of recent additions (the
     admin interface and the Reaper actor). These will be added as soon as I get
     around to writing them.
+
+## Limitations
+
+Although I'd like to have implemented proper HTTP request chunking to allow
+files to uploaded in a more appropriate way, I discovered that a limitation of
+Spray was its inability to handle chunked request data without first loading all
+chunks into memory, assembling a full request body, and parsing that request.
+Naturally when talking about files averaging 200MB - 1GB in size, this is not
+feasible.
+
+I could have opted for building this Spray feature myself, but instead I decided
+to simulate a chunked request by creating a `ChunkedFileHandler` class which
+will accept a number of requests filling in one 1MB chunk at a time, and will
+then assemble, checksum, and decompress the file and handle that as the upload.
+
+This is currently a work in progress; the core functionality has been written
+but the HTTP interface for handling that needs to be added.
