@@ -88,7 +88,6 @@
                   </excludes>
                 </filter>
               </filters>
-              <minimiseJar>true</minimiseJar>
               <createDependencyReducedPom>false</createDependencyReducedPom>
             </configuration>
           </execution>
