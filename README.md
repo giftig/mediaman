@@ -17,7 +17,7 @@ different formats, maximum file sizes, etc.
 
 ### Scope
 
-Though it'd be useful to provide a interface to index the library, delete
+Though it'd be useful to provide an interface to index the library, delete
 unwanted programmes or episodes, etc., that is not currently a priority as I
 have already written a Flask project to do that for me. I may add / move that
 functionality to here at a later point if I achieve my other goals for this
